@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI PDF Chatbot Demo</title>
+  <link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-box">
+    <div class="chat-header">AI PDF Chatbot Demo</div>
+    <div class="chat-messages" id="chat-messages"></div>
+
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Type your query...">
+      <div class="reasoning-container">
+        <label for="reasoning-select" class="reasoning-label">Reasoning</label>
+        <select id="reasoning-select" class="reasoning-select">
+          <option value="simple">Simple</option>
+          <option value="medium">Medium</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const doctorData = { name: "John Doe", class_name: "A" }; // Simulated doctor data
+  const messagesEl = document.getElementById("chat-messages");
+  const inputEl = document.getElementById("user-input");
+  const reasoningEl = document.getElementById("reasoning-select");
+  const sendBtn = document.getElementById("send-btn");
+
+  // ------------------ Bold parser ------------------
+  function parseBoldText(text) {
+    return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  // ------------------ Render messages ------------------
+  const messages = [];
+
+  function renderMessages() {
+    messagesEl.innerHTML = "";
+    messages.forEach(msg => {
+      const div = document.createElement("div");
+      div.className = `message ${msg.sender}`;
+      let content = "";
+      if (msg.sender === "bot" && msg.name) {
+        content += `<div class="bot-label">${parseBoldText(msg.name)}</div>`;
+      }
+      content += `<div>${parseBoldText(msg.text)}</div>`;
+      if (msg.links && msg.links.length > 0) {
+        msg.links.forEach(link => {
+          content += `<a href="${link}" target="_blank" class="pdf-link">Open PDF</a>`;
+        });
+      }
+      div.innerHTML = content;
+      messagesEl.appendChild(div);
+    });
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // ------------------ Initialize with welcome message ------------------
+  messages.push({
+    sender: "bot",
+    text: `Welcome, Dr. ${doctorData.name}! How can I assist you today?`,
+    links: []
+  });
+  renderMessages();
+
+  // ------------------ Handle sending ------------------
+  function handleSend() {
+    const userInput = inputEl.value.trim();
+    if (!userInput) return;
+
+    messages.push({ sender: "user", text: userInput });
+    inputEl.value = "";
+    renderMessages();
+
+    const reasoning = reasoningEl.value;
+
+    // Simulate bot waiting
+    const waitingMsg = { sender: "bot", text: "Waiting for response...", links: [], waiting: true };
+    messages.push(waitingMsg);
+    renderMessages();
+
+    setTimeout(() => {
+      messages.pop(); // remove waiting
+      messages.push({
+        sender: "bot",
+        name: "AI Assistant",
+        text: `You asked: **${userInput}**. Here's a simulated answer based on "${reasoning}" reasoning.`,
+        links: ["https://example.com/sample.pdf"] // example link
+      });
+      renderMessages();
+    }, 1000);
+  }
+
+  sendBtn.addEventListener("click", handleSend);
+  inputEl.addEventListener("keypress", (e) => { if(e.key === "Enter") handleSend(); });
+
+</script>
+
+</body>
+</html>
